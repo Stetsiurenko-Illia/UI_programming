@@ -8,8 +8,8 @@ function Tasks() {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [editingTaskId, setEditingTaskId] = useState(null); // Для відстеження редагованого завдання
-  const [editedTask, setEditedTask] = useState({ title: "", description: "" }); // Стан для редагування
+  const [editingTaskId, setEditingTaskId] = useState(null); 
+  const [editedTask, setEditedTask] = useState({ title: "", description: "" }); 
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -91,7 +91,7 @@ function Tasks() {
     }
     try {
       setError("");
-      const response = await api.put(`api/tasks/${editingTaskId}/`, editedTask); // Змінено на put
+      const response = await api.put(`api/tasks/${editingTaskId}/`, editedTask); 
       setTasks(
         tasks.map((task) => (task.id === editingTaskId ? response.data : task))
       );

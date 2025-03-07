@@ -13,7 +13,6 @@ function RegisterModal({ onClose, onSwitchToLogin }) {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    // Перевірка всіх обов’язкових полів
     if (!username.trim() || !email.trim() || !password.trim()) {
       setError(
         "Заповніть усі обов’язкові поля: ім’я користувача, email та пароль."
@@ -26,7 +25,7 @@ function RegisterModal({ onClose, onSwitchToLogin }) {
       formData.append("username", username);
       formData.append("email", email);
       formData.append("password", password);
-      if (gender) formData.append("gender", gender); // Додаємо лише, якщо вибрано
+      if (gender) formData.append("gender", gender); 
       if (birthDate) formData.append("birth_date", birthDate);
 
       const response = await axios.post(
@@ -45,7 +44,7 @@ function RegisterModal({ onClose, onSwitchToLogin }) {
       setError(
         err.response?.data?.email?.[0] ||
           err.response?.data?.username?.[0] ||
-          err.response?.data?.password?.[0] || // Додано обробку помилок для password
+          err.response?.data?.password?.[0] || 
           err.response?.data?.non_field_errors?.[0] ||
           "Не вдалося зареєструватися. Перевірте дані."
       );
@@ -103,7 +102,7 @@ function RegisterModal({ onClose, onSwitchToLogin }) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength="6" // Додано мінімальну довжину для пароля
+                  minLength="6" 
                 />
               </div>
               <div className="mb-3">

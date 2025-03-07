@@ -7,7 +7,7 @@ const api = axios.create({
   },
 });
 
-// Додаємо accessToken до заголовків
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("accessToken");
   if (token) {
@@ -16,7 +16,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Обробка 401 помилок і оновлення токена
+
 let isRefreshing = false;
 let refreshSubscribers = [];
 
@@ -66,7 +66,6 @@ api.interceptors.response.use(
           isRefreshing = false;
         }
       } else {
-        // Якщо оновлення вже в процесі, додаємо запит у чергу
         return new Promise((resolve) => {
           refreshSubscribers.push((token) => {
             originalRequest.headers.Authorization = `Bearer ${token}`;

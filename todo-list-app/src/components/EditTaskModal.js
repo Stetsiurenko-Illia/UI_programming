@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import api from "../api";
-import "bootstrap/dist/css/bootstrap.min.css"; // Переконайтеся, що Bootstrap підключений
+import "bootstrap/dist/css/bootstrap.min.css";
 
 function EditTaskModal({ taskId, onSave, onCancel }) {
   const [task, setTask] = useState({ title: "", description: "" });
   const [error, setError] = useState("");
 
-  // Завантажуємо дані задачі при відкритті модалки
   useEffect(() => {
     const fetchTask = async () => {
       try {
@@ -20,7 +19,6 @@ function EditTaskModal({ taskId, onSave, onCancel }) {
     fetchTask();
   }, [taskId]);
 
-  // Оновлюємо стан при зміні полів
   const handleChange = (e) => {
     const { name, value } = e.target;
     setTask((prevTask) => ({
@@ -29,11 +27,10 @@ function EditTaskModal({ taskId, onSave, onCancel }) {
     }));
   };
 
-  // Зберігаємо оновлену задачу
   const handleSave = async () => {
     try {
       await api.patch(`api/tasks/${taskId}/`, task);
-      onSave(taskId, task); // Викликаємо onSave для оновлення списку
+      onSave(taskId, task); 
     } catch (err) {
       setError("Не вдалося оновити задачу. Перевірте дані.");
       console.error("Помилка оновлення:", err);
