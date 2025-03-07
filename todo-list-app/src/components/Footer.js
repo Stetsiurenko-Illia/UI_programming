@@ -7,7 +7,7 @@ function Footer() {
       <p className="mb-0">
         Ⓒ Made by Illia Stetsiurenko 2025.{" "}
         <a
-          href="https://github.com/Stetsiurenko-Illia"
+          href="https://github.com/Stetsiurenko-Illia/UI_programming"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary"

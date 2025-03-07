@@ -8,6 +8,8 @@ function Tasks() {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [editingTaskId, setEditingTaskId] = useState(null); // Для відстеження редагованого завдання
+  const [editedTask, setEditedTask] = useState({ title: "", description: "" }); // Стан для редагування
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -71,6 +73,44 @@ function Tasks() {
     }
   };
 
+  const handleEdit = (taskId) => {
+    const taskToEdit = tasks.find((task) => task.id === taskId);
+    if (taskToEdit) {
+      setEditedTask({
+        title: taskToEdit.title,
+        description: taskToEdit.description,
+      });
+      setEditingTaskId(taskId);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editedTask.title.trim()) {
+      setError("Заголовок не може бути порожнім");
+      return;
+    }
+    try {
+      setError("");
+      const response = await api.put(`api/tasks/${editingTaskId}/`, editedTask); // Змінено на put
+      setTasks(
+        tasks.map((task) => (task.id === editingTaskId ? response.data : task))
+      );
+      setEditingTaskId(null);
+      setEditedTask({ title: "", description: "" });
+    } catch (err) {
+      setError(
+        "Не вдалося оновити задачу: " +
+          (err.response?.data?.detail || err.message)
+      );
+      console.error("Помилка редагування:", err);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTaskId(null);
+    setEditedTask({ title: "", description: "" });
+  };
+
   const handleDeleteTask = async (taskId) => {
     try {
       await api.delete(`api/tasks/${taskId}/`);
@@ -124,11 +164,11 @@ function Tasks() {
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
-      </div>
-      <div className="mb-4 d-flex justify-content-end">
-        <button className="btn btn-primary btn-sm" onClick={handleAddTask}>
-          Додати
-        </button>
+        <div className="mb-4 d-flex justify-content-end">
+          <button className="btn btn-primary btn-sm" onClick={handleAddTask}>
+            Додати
+          </button>
+        </div>
       </div>
       <ul className="list-group">
         {sortedTasks.length === 0 ? (
@@ -149,7 +189,10 @@ function Tasks() {
                   <strong>{task.title}</strong>
                 </div>
                 <div className="d-flex">
-                  <button className="btn btn-outline-warning btn-sm me-2">
+                  <button
+                    className="btn btn-outline-warning btn-sm me-2"
+                    onClick={() => handleEdit(task.id)}
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -185,6 +228,72 @@ function Tasks() {
           ))
         )}
       </ul>
+      {editingTaskId && (
+        <div className="modal show" style={{ display: "block" }} tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Редагувати задачу</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={handleCancelEdit}
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div className="modal-body">
+                {error && <div className="alert alert-danger">{error}</div>}
+                <div className="mb-3">
+                  <label htmlFor="edit-title" className="form-label">
+                    Заголовок
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="edit-title"
+                    value={editedTask.title}
+                    onChange={(e) =>
+                      setEditedTask({ ...editedTask, title: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="edit-description" className="form-label">
+                    Опис
+                  </label>
+                  <textarea
+                    className="form-control"
+                    id="edit-description"
+                    value={editedTask.description}
+                    onChange={(e) =>
+                      setEditedTask({
+                        ...editedTask,
+                        description: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleCancelEdit}
+                >
+                  Скасувати
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleSaveEdit}
+                >
+                  Зберегти
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
