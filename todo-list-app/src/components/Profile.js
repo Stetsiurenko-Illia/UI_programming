@@ -145,9 +145,9 @@ function Profile() {
                   onChange={handleInputChange}
                 >
                   <option value="">Оберіть стать</option>
-                  <option value="male">Чоловік</option>
-                  <option value="female">Жінка</option>
-                  <option value="other">Інше</option>
+                  <option value="M">Чоловік</option>
+                  <option value="F">Жінка</option>
+                  <option value="O">Інше</option>
                 </select>
               </div>
               <div className="mb-3">

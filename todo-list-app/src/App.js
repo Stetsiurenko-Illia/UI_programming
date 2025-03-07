@@ -61,21 +61,29 @@ function App() {
               <p className="lead text-center mb-4">
                 Організуй свій день із нашим додатком.
               </p>
-              {!isAuthenticated ? (
+              <div className="d-flex gap-2">
+                {!isAuthenticated ? (
+                  <button
+                    className="btn btn-primary btn-lg"
+                    onClick={() => setShowLogin(true)}
+                  >
+                    Старт
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-primary btn-lg"
+                    onClick={() => navigate("/tasks")}
+                  >
+                    Планувати
+                  </button>
+                )}
                 <button
-                  className="btn btn-primary btn-lg"
-                  onClick={() => setShowLogin(true)}
+                  className="btn btn-outline-secondary btn-lg"
+                  onClick={() => navigate("/about")}
                 >
-                  Старт
+                  Про додаток
                 </button>
-              ) : (
-                <button
-                  className="btn btn-primary btn-lg"
-                  onClick={() => navigate("/tasks")}
-                >
-                  Планувати
-                </button>
-              )}
+              </div>
               {showLogin && (
                 <LoginModal
                   onClose={() => setShowLogin(false)}
@@ -104,7 +112,7 @@ function App() {
           path="/about"
           element={
             <div className="site-container">
-              {isAuthenticated ? <About /> : <Navigate to="/" />}
+              <About />
             </div>
           }
         />
