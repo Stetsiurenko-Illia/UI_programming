@@ -15,7 +15,7 @@ function Profile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
- const BASE_URL = 'https://wep-app.onrender.com';
+  const BASE_URL = "https://wep-app.onrender.com";
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -183,9 +183,9 @@ function Profile() {
               </p>
               <p>
                 <strong>Стать:</strong>{" "}
-                {profile.gender === "male"
+                {profile.gender === "M"
                   ? "Чоловік"
-                  : profile.gender === "female"
+                  : profile.gender === "F"
                   ? "Жінка"
                   : "Інше"}
               </p>
