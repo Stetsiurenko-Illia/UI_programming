@@ -29,7 +29,7 @@ function RegisterModal({ onClose, onSwitchToLogin }) {
       if (birthDate) formData.append("birth_date", birthDate);
 
       const response = await axios.post(
-        "https://web-app-backend-m6hf.onrender.com//api/register/",
+        "https://web-app-backend-m6hf.onrender.com/api/register/",
         formData,
         {
           headers: {

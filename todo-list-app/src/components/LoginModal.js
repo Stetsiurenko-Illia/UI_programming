@@ -10,7 +10,7 @@ function LoginModal({ onClose, onLoginSuccess, onSwitchToRegister }) {
   const handleLogin = async () => {
     try {
       const response = await axios.post(
-        "https://web-app-backend-m6hf.onrender.com//api/login/",
+        "https://web-app-backend-m6hf.onrender.com/api/login/",
         {
           email,
           password,
