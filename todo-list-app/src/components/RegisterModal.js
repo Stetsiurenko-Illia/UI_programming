@@ -25,11 +25,11 @@ function RegisterModal({ onClose, onSwitchToLogin }) {
       formData.append("username", username);
       formData.append("email", email);
       formData.append("password", password);
-      if (gender) formData.append("gender", gender); 
+      if (gender) formData.append("gender", gender);
       if (birthDate) formData.append("birth_date", birthDate);
 
       const response = await axios.post(
-        "https://wep-app.onrender.com/api/register/",
+        "https://web-app-backend-m6hf.onrender.com//api/register/",
         formData,
         {
           headers: {
@@ -44,7 +44,7 @@ function RegisterModal({ onClose, onSwitchToLogin }) {
       setError(
         err.response?.data?.email?.[0] ||
           err.response?.data?.username?.[0] ||
-          err.response?.data?.password?.[0] || 
+          err.response?.data?.password?.[0] ||
           err.response?.data?.non_field_errors?.[0] ||
           "Не вдалося зареєструватися. Перевірте дані."
       );
@@ -102,7 +102,7 @@ function RegisterModal({ onClose, onSwitchToLogin }) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength="6" 
+                  minLength="6"
                 />
               </div>
               <div className="mb-3">

@@ -1,12 +1,11 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://wep-app.onrender.com",
+  baseURL: "https://web-app-backend-m6hf.onrender.com/",
   headers: {
     "Content-Type": "application/json",
   },
 });
-
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("accessToken");
@@ -15,7 +14,6 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
-
 
 let isRefreshing = false;
 let refreshSubscribers = [];

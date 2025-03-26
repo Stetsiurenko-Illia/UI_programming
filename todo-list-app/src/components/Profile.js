@@ -15,7 +15,7 @@ function Profile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const BASE_URL = "https://wep-app.onrender.com";
+  const BASE_URL = "https://web-app-backend-m6hf.onrender.com/";
 
   useEffect(() => {
     const fetchProfile = async () => {
