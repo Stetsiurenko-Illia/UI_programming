@@ -10,7 +10,7 @@ function Tasks() {
   const [error, setError] = useState("");
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editedTask, setEditedTask] = useState({ title: "", description: "" });
-  const [ws, setWs] = useState(null); // Додаємо WebSocket
+  const [ws, setWs] = useState(null);
 
   // Ініціалізація та WebSocket
   useEffect(() => {
@@ -41,7 +41,6 @@ function Tasks() {
       socket.onmessage = function (event) {
         const data = JSON.parse(event.data);
         console.log("Отримано повідомлення:", data);
-        // Тут можна додати обробку повідомлень, наприклад, для поширення завдань
       };
 
       socket.onclose = function (event) {
@@ -54,7 +53,6 @@ function Tasks() {
 
       setWs(socket);
 
-      // Очищення при розмонтуванні
       return () => {
         if (socket) {
           socket.close();
