@@ -31,8 +31,8 @@ function Tasks() {
     };
     fetchTasks();
 
-    // Підключення WebSocket
     const token = localStorage.getItem("accessToken");
+    console.log("Токен:", token);
     if (token && token !== "null") {
       const socket = new WebSocket(
         `wss://web-app-backend-m6hf.onrender.com/ws/tasks/?token=${token}`
@@ -45,7 +45,13 @@ function Tasks() {
       socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
         console.log("Отримано повідомлення:", data);
-        if (data.action === "share_task") {
+        if (data.action === "create_task") {
+          const newTask = data.task;
+          setTasks((prev) => [
+            ...prev.filter((t) => t.id !== newTask.id),
+            newTask,
+          ]);
+        } else if (data.action === "share_task") {
           const sharedTask = data.task;
           setSharedTasks((prev) => [
             ...prev.filter((t) => t.id !== sharedTask.id),
@@ -99,16 +105,6 @@ function Tasks() {
       setTasks([...tasks, response.data]);
       setTitle("");
       setDescription("");
-      if (ws) {
-        ws.send(
-          JSON.stringify({
-            action: "create_task",
-            title,
-            description,
-            completed: false,
-          })
-        );
-      }
     } catch (err) {
       setError(
         "Не вдалося додати завдання: " +
