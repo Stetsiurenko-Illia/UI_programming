@@ -15,7 +15,45 @@ function Tasks() {
   const [shareEmail, setShareEmail] = useState("");
   const [ws, setWs] = useState(null);
 
-  // Ініціалізація WebSocket і завантаження завдань
+  // Функція для підключення WebSocket
+  const connectWebSocket = (token) => {
+    const socket = new WebSocket(
+      `wss://${window.location.host}/ws/tasks/?token=${token}`
+    );
+
+    socket.onopen = function (event) {
+      console.log("WebSocket підключено");
+    };
+
+    socket.onmessage = function (event) {
+      const data = JSON.parse(event.data);
+      if (data.action === "share_task") {
+        console.log("Завдання поширене:", data.task);
+        const sharedTask = data.task;
+        setSharedTasks((prev) => [
+          ...prev,
+          { ...sharedTask, shared_by: sharedTask.user },
+        ]);
+      } else if (data.error) {
+        console.error("Server error:", data.error);
+        setError(`Помилка: ${data.error}`);
+      }
+    };
+
+    socket.onclose = function (event) {
+      console.log("WebSocket відключено", event);
+      setError("З'єднання з сервером втрачено");
+    };
+
+    socket.onerror = function (error) {
+      console.error("WebSocket error:", error);
+      setError("Помилка WebSocket-з'єднання");
+    };
+
+    setWs(socket);
+  };
+
+  // Ініціалізація компонента
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -32,29 +70,20 @@ function Tasks() {
     };
     fetchTasks();
 
-    // Налаштування WebSocket
+    // Підключення WebSocket
     const token = localStorage.getItem("access_token");
-    const socket = new WebSocket(
-      `wss://${window.location.host}/ws/tasks/?token=${token}`
-    );
-    setWs(socket);
+    if (token) {
+      connectWebSocket(token);
+    } else {
+      setError("Токен авторизації відсутній. Увійдіть у систему.");
+    }
 
-    socket.onopen = () => console.log("WebSocket з'єднано");
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.action === "share_task") {
-        const sharedTask = data.task;
-        setSharedTasks((prev) => [
-          ...prev,
-          { ...sharedTask, shared_by: sharedTask.user },
-        ]);
+    return () => {
+      if (ws) {
+        ws.close();
       }
     };
-    socket.onerror = (err) => console.error("WebSocket помилка:", err);
-    socket.onclose = () => console.log("WebSocket закрито");
-
-    return () => socket.close();
-  }, []);
+  }, [ws]);
 
   const handleAddTask = async () => {
     if (!title.trim() || !description.trim()) {
