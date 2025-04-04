@@ -24,7 +24,7 @@ function Tasks() {
         setSharedTasks(sharedResponse.data);
         setLoading(false);
       } catch (err) {
-        setError("Не вдалося завантажити завдання");
+        setError("Не вдалося завантажити завдання: " + err.message);
         setLoading(false);
         console.error(err);
       }
@@ -36,7 +36,7 @@ function Tasks() {
     if (token) {
       console.log("Токен знайдено:", token);
       const socket = new WebSocket(
-        `ws://${window.location.host}/ws/tasks/?token=${token}`
+        `wss://web-app-backend-m6hf.onrender.com/ws/tasks/?token=${token}`
       );
 
       socket.onopen = () => {
