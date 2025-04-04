@@ -32,7 +32,7 @@ function Tasks() {
     fetchTasks();
 
     // Підключення WebSocket
-    const token = localStorage.getItem("access");
+    const token = localStorage.getItem("accessToken");
     if (token) {
       console.log("Токен знайдено:", token);
       const socket = new WebSocket(
