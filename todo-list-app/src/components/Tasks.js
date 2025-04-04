@@ -57,6 +57,18 @@ function Tasks() {
             ...prev.filter((t) => t.id !== sharedTask.id),
             { ...sharedTask, shared_by: sharedTask.user },
           ]);
+        } else if (data.action === "update_task") {
+          const updatedTask = data.task;
+          setTasks((prev) =>
+            prev.map((task) =>
+              task.id === updatedTask.id ? { ...task, ...updatedTask } : task
+            )
+          );
+          setSharedTasks((prev) =>
+            prev.map((task) =>
+              task.id === updatedTask.id ? { ...task, ...updatedTask } : task
+            )
+          );
         } else if (data.error) {
           setError(`Помилка від сервера: ${data.error}`);
         }
@@ -126,6 +138,17 @@ function Tasks() {
             : task
         )
       );
+      if (ws) {
+        ws.send(
+          JSON.stringify({
+            action: "update_task",
+            task: {
+              id: taskId,
+              completed: response.data.completed,
+            },
+          })
+        );
+      }
     } catch (err) {
       console.error("Помилка оновлення статусу:", err);
       setError("Не вдалося оновити статус задачі");
@@ -154,6 +177,19 @@ function Tasks() {
       setTasks(
         tasks.map((task) => (task.id === editingTaskId ? response.data : task))
       );
+      if (ws) {
+        ws.send(
+          JSON.stringify({
+            action: "update_task",
+            task: {
+              id: editingTaskId,
+              title: response.data.title,
+              description: response.data.description,
+              completed: response.data.completed,
+            },
+          })
+        );
+      }
       setEditingTaskId(null);
       setEditedTask({ title: "", description: "" });
     } catch (err) {
