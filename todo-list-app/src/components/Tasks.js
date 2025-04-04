@@ -4,63 +4,20 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 function Tasks() {
   const [tasks, setTasks] = useState([]);
-  const [sharedTasks, setSharedTasks] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editedTask, setEditedTask] = useState({ title: "", description: "" });
-  const [sharingTaskId, setSharingTaskId] = useState(null);
-  const [shareEmail, setShareEmail] = useState("");
-  const [ws, setWs] = useState(null);
+  const [ws, setWs] = useState(null); // Додаємо WebSocket
 
-  // Функція для підключення WebSocket
-  const connectWebSocket = (token) => {
-    const socket = new WebSocket(
-      `wss://${window.location.host}/ws/tasks/?token=${token}`
-    );
-
-    socket.onopen = function (event) {
-      console.log("WebSocket підключено");
-    };
-
-    socket.onmessage = function (event) {
-      const data = JSON.parse(event.data);
-      if (data.action === "share_task") {
-        console.log("Завдання поширене:", data.task);
-        const sharedTask = data.task;
-        setSharedTasks((prev) => [
-          ...prev,
-          { ...sharedTask, shared_by: sharedTask.user },
-        ]);
-      } else if (data.error) {
-        console.error("Server error:", data.error);
-        setError(`Помилка: ${data.error}`);
-      }
-    };
-
-    socket.onclose = function (event) {
-      console.log("WebSocket відключено", event);
-      setError("З'єднання з сервером втрачено");
-    };
-
-    socket.onerror = function (error) {
-      console.error("WebSocket error:", error);
-      setError("Помилка WebSocket-з'єднання");
-    };
-
-    setWs(socket);
-  };
-
-  // Ініціалізація компонента
+  // Ініціалізація та WebSocket
   useEffect(() => {
     const fetchTasks = async () => {
       try {
         const response = await api.get("api/tasks/");
         setTasks(response.data);
-        const sharedResponse = await api.get("api/shared-tasks/");
-        setSharedTasks(sharedResponse.data);
         setLoading(false);
       } catch (err) {
         setError("Не вдалося завантажити завдання");
@@ -71,25 +28,53 @@ function Tasks() {
     fetchTasks();
 
     // Підключення WebSocket
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("access");
     if (token) {
-      connectWebSocket(token);
-    } else {
-      setError("Токен авторизації відсутній. Увійдіть у систему.");
-    }
+      const socket = new WebSocket(
+        `wss://${window.location.host}/ws/tasks/?token=${token}`
+      );
 
-    return () => {
-      if (ws) {
-        ws.close();
-      }
-    };
-  }, [ws]);
+      socket.onopen = function (event) {
+        console.log("WebSocket підключено");
+      };
+
+      socket.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+        console.log("Отримано повідомлення:", data);
+        // Тут можна додати обробку повідомлень, наприклад, для поширення завдань
+      };
+
+      socket.onclose = function (event) {
+        console.log("WebSocket відключено", event);
+      };
+
+      socket.onerror = function (error) {
+        console.error("WebSocket помилка:", error);
+      };
+
+      setWs(socket);
+
+      // Очищення при розмонтуванні
+      return () => {
+        if (socket) {
+          socket.close();
+        }
+      };
+    } else {
+      console.warn("Токен не знайдено. WebSocket не підключено.");
+    }
+  }, []);
 
   const handleAddTask = async () => {
-    if (!title.trim() || !description.trim()) {
-      setError("Заголовок і опис не можуть бути порожніми");
+    if (!title.trim()) {
+      setError("Заголовок не може бути порожнім");
       return;
     }
+    if (!description.trim()) {
+      setError("Опис не може бути порожнім");
+      return;
+    }
+
     try {
       setError("");
       const response = await api.post("api/tasks/", {
@@ -100,19 +85,12 @@ function Tasks() {
       setTasks([...tasks, response.data]);
       setTitle("");
       setDescription("");
-      if (ws) {
-        ws.send(
-          JSON.stringify({
-            action: "create_task",
-            title,
-            description,
-            completed: false,
-          })
-        );
-      }
     } catch (err) {
-      setError("Не вдалося додати завдання");
-      console.error(err);
+      setError(
+        "Не вдалося додати завдання: " +
+          (err.response?.data?.title?.[0] || err.message)
+      );
+      console.error("Помилка додавання задачі:", err);
     }
   };
 
@@ -129,8 +107,8 @@ function Tasks() {
         )
       );
     } catch (err) {
+      console.error("Помилка оновлення статусу:", err);
       setError("Не вдалося оновити статус задачі");
-      console.error(err);
     }
   };
 
@@ -159,8 +137,11 @@ function Tasks() {
       setEditingTaskId(null);
       setEditedTask({ title: "", description: "" });
     } catch (err) {
-      setError("Не вдалося оновити задачу");
-      console.error(err);
+      setError(
+        "Не вдалося оновити задачу: " +
+          (err.response?.data?.detail || err.message)
+      );
+      console.error("Помилка редагування:", err);
     }
   };
 
@@ -174,31 +155,8 @@ function Tasks() {
       await api.delete(`api/tasks/${taskId}/`);
       setTasks(tasks.filter((task) => task.id !== taskId));
     } catch (err) {
+      console.error("Помилка видалення:", err);
       setError("Не вдалося видалити задачу");
-      console.error(err);
-    }
-  };
-
-  const handleShareClick = (taskId) => {
-    setSharingTaskId(sharingTaskId === taskId ? null : taskId);
-    setShareEmail("");
-  };
-
-  const handleShareSubmit = (taskId) => {
-    if (!shareEmail.trim()) {
-      setError("Введіть email");
-      return;
-    }
-    if (ws) {
-      ws.send(
-        JSON.stringify({
-          action: "share_task",
-          task_id: taskId,
-          email: shareEmail,
-        })
-      );
-      setSharingTaskId(null);
-      setShareEmail("");
     }
   };
 
@@ -222,7 +180,11 @@ function Tasks() {
   return (
     <div className="h-100 container mt-5">
       <h1 className="text-center mb-4">Мої справи</h1>
-      {error && <div className="alert alert-danger mb-4">{error}</div>}
+      {error && (
+        <div className="alert alert-danger mb-4" role="alert">
+          {error}
+        </div>
+      )}
       <div className="mb-4">
         <div className="input-group mb-2">
           <input
@@ -247,9 +209,7 @@ function Tasks() {
           </button>
         </div>
       </div>
-
-      <h2>Мої завдання</h2>
-      <ul className="list-group mb-4">
+      <ul className="list-group">
         {sortedTasks.length === 0 ? (
           <li className="list-group-item text-center">Немає задач</li>
         ) : (
@@ -283,7 +243,7 @@ function Tasks() {
                     </svg>
                   </button>
                   <button
-                    className="btn btn-outline-danger btn-sm me-2"
+                    className="btn btn-outline-danger btn-sm"
                     onClick={() => handleDeleteTask(task.id)}
                   >
                     <svg
@@ -300,53 +260,13 @@ function Tasks() {
                       />
                     </svg>
                   </button>
-                  <button
-                    className="btn btn-outline-primary btn-sm"
-                    onClick={() => handleShareClick(task.id)}
-                  >
-                    ➤
-                  </button>
                 </div>
               </div>
               <p className="mb-0 ms-4">{task.description}</p>
-              {sharingTaskId === task.id && (
-                <div className="mt-2 ms-4">
-                  <div className="input-group">
-                    <input
-                      type="email"
-                      className="form-control"
-                      placeholder="Введіть email"
-                      value={shareEmail}
-                      onChange={(e) => setShareEmail(e.target.value)}
-                    />
-                    <button
-                      className="btn btn-outline-success"
-                      onClick={() => handleShareSubmit(task.id)}
-                    >
-                      ✈
-                    </button>
-                  </div>
-                </div>
-              )}
             </li>
           ))
         )}
       </ul>
-
-      <h2>Поширені завдання</h2>
-      <ul className="list-group">
-        {sharedTasks.length === 0 ? (
-          <li className="list-group-item text-center">Немає поширених задач</li>
-        ) : (
-          sharedTasks.map((task) => (
-            <li key={task.id} className="list-group-item">
-              <strong>{task.title}</strong> (від {task.shared_by})
-              <p className="mb-0 ms-4">{task.description}</p>
-            </li>
-          ))
-        )}
-      </ul>
-
       {editingTaskId && (
         <div className="modal show" style={{ display: "block" }} tabIndex="-1">
           <div className="modal-dialog">
