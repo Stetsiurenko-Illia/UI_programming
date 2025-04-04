@@ -212,6 +212,7 @@ function Tasks() {
 
   const handleDeleteTask = async (taskId) => {
     try {
+      setError("");
       await api.delete(`api/tasks/${taskId}/`);
       setTasks(tasks.filter((task) => task.id !== taskId));
       if (ws) {
@@ -224,7 +225,22 @@ function Tasks() {
       }
     } catch (err) {
       console.error("Помилка видалення:", err);
-      setError("Не вдалося видалити задачу");
+      if (err.response && err.response.status === 404) {
+        setTasks(tasks.filter((task) => task.id !== taskId));
+        if (ws) {
+          ws.send(
+            JSON.stringify({
+              action: "delete_task",
+              task_id: taskId,
+            })
+          );
+        }
+      } else {
+        setError(
+          "Не вдалося видалити задачу: " +
+            (err.response?.data?.detail || err.message)
+        );
+      }
     }
   };
 
