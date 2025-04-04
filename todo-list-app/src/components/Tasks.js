@@ -33,8 +33,7 @@ function Tasks() {
 
     // Підключення WebSocket
     const token = localStorage.getItem("accessToken");
-    if (token) {
-      console.log("Токен знайдено:", token);
+    if (token && token !== "null") {
       const socket = new WebSocket(
         `wss://web-app-backend-m6hf.onrender.com/ws/tasks/?token=${token}`
       );
@@ -49,7 +48,7 @@ function Tasks() {
         if (data.action === "share_task") {
           const sharedTask = data.task;
           setSharedTasks((prev) => [
-            ...prev,
+            ...prev.filter((t) => t.id !== sharedTask.id),
             { ...sharedTask, shared_by: sharedTask.user },
           ]);
         } else if (data.error) {
@@ -75,8 +74,8 @@ function Tasks() {
         }
       };
     } else {
-      console.warn("Токен не знайдено в localStorage");
-      setError("Токен авторизації відсутній. WebSocket не підключено.");
+      console.warn("Токен не знайдено або null");
+      setError("Токен авторизації відсутній. Увійдіть у систему.");
     }
   }, []);
 
