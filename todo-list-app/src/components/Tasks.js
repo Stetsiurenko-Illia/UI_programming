@@ -11,8 +11,8 @@ function Tasks() {
   const [error, setError] = useState("");
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editedTask, setEditedTask] = useState({ title: "", description: "" });
-  const [sharingTaskId, setSharingTaskId] = useState(null); 
-  const [shareEmail, setShareEmail] = useState(""); 
+  const [sharingTaskId, setSharingTaskId] = useState(null);
+  const [shareEmail, setShareEmail] = useState("");
   const [ws, setWs] = useState(null);
 
   // Ініціалізація WebSocket і завантаження завдань
@@ -33,9 +33,9 @@ function Tasks() {
     fetchTasks();
 
     // Налаштування WebSocket
-    const token = localStorage.getItem("access_token"); 
+    const token = localStorage.getItem("access_token");
     const socket = new WebSocket(
-      `ws://localhost:8000/ws/tasks/?token=${token}`
+      `wss://${window.location.host}/ws/tasks/?token=${token}`
     );
     setWs(socket);
 
