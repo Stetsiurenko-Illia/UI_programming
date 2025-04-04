@@ -69,6 +69,10 @@ function Tasks() {
               task.id === updatedTask.id ? { ...task, ...updatedTask } : task
             )
           );
+        } else if (data.action === "delete_task") {
+          const taskId = data.task_id;
+          setTasks((prev) => prev.filter((task) => task.id !== taskId));
+          setSharedTasks((prev) => prev.filter((task) => task.id !== taskId));
         } else if (data.error) {
           setError(`Помилка від сервера: ${data.error}`);
         }
@@ -210,6 +214,14 @@ function Tasks() {
     try {
       await api.delete(`api/tasks/${taskId}/`);
       setTasks(tasks.filter((task) => task.id !== taskId));
+      if (ws) {
+        ws.send(
+          JSON.stringify({
+            action: "delete_task",
+            task_id: taskId,
+          })
+        );
+      }
     } catch (err) {
       console.error("Помилка видалення:", err);
       setError("Не вдалося видалити задачу");
